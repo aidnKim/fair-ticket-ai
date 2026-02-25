@@ -29,9 +29,10 @@ def analyze(event: dict) -> tuple[bool, str]:
         return True, "burst_request"
     
     # 패턴 2: Session Hopping
-    null_sessions = sum(1 for h in recent if not h["sessionId"])
-    if null_sessions >= 5:
+    null_sessions = sum(1 for h in recent if not h["sessionId"] and not h.get("userEmail"))
+    if null_sessions >= 10:
         return True, "session_hopping"
+
     
     # 패턴 3: Endpoint Scan
     unique_endpoints = len(set(h["endpoint"] for h in recent))
