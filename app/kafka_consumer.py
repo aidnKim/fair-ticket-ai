@@ -4,7 +4,9 @@ from kafka import KafkaConsumer
 from detector import analyze
 from kafka_producer import send_blocked_user
 
-KAFKA_BOOTSTRAP_SERVERS = "localhost:9092"
+import os
+KAFKA_BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+
 TOPIC = "user-actions"
 GROUP_ID = "ai-fraud-detector"
 

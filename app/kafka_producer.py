@@ -1,7 +1,8 @@
 import json
 from kafka import KafkaProducer
 
-KAFKA_BOOTSTRAP_SERVERS = "localhost:9092"
+import os
+KAFKA_BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 TOPIC = "blocked-users"
 
 producer = KafkaProducer(
