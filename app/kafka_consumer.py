@@ -1,5 +1,6 @@
 import json
 import threading
+import time
 from kafka import KafkaConsumer
 from detector import analyze
 from kafka_producer import send_blocked_user
