@@ -2,6 +2,7 @@ import json
 import os
 from kafka import KafkaProducer
 
+
 KAFKA_BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 TOPIC = "blocked-users"
 
@@ -13,10 +14,17 @@ def get_producer():
     global producer
     # 만약 프로듀서가 비어있다면, 그때서야 처음으로 생성(연결)
     if producer is None:
-        producer = KafkaProducer(
-            bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
-            value_serializer=lambda v: json.dumps(v).encode("utf-8")
-        )
+        while True:
+            try:
+                producer = KafkaProducer(
+                    bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
+                    value_serializer=lambda v: json.dumps(v).encode("utf-8")
+                )
+                print("✅ Kafka Producer connected")
+                break
+            except Exception as e:
+                print(f"⏳ Kafka Producer not ready, retrying in 5s... ({e})")
+                time.sleep(5)
     return producer
 
 # 3. 메시지 보내는 함수
