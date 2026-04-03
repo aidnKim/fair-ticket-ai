@@ -9,6 +9,10 @@ import os
 KAFKA_BOOTSTRAP_SERVERS = os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 TOPIC = "user-actions"
 GROUP_ID = "ai-fraud-detector"
+
+# 이미 차단한 유저를 기억하는 set
+blocked_users = set()
+
 def start_consumer():
     consumer = None
     while consumer is None:
@@ -27,14 +31,27 @@ def start_consumer():
     
     for msg in consumer:
         event = msg.value
-        print(f"📩 Received: {event.get('userEmail')} - {event.get('endpoint')}")
+        user_id = event.get("userEmail") or event.get("sessionId")
+        
+        # 이미 차단된 유저면 스킵
+        if user_id in blocked_users:
+            continue
         
         is_suspicious, reason = analyze(event)
         
         if is_suspicious:
-            user_id = event.get("userEmail") or event.get("sessionId")
+            blocked_users.add(user_id)
             print(f"🚨 Suspicious detected: {user_id} - {reason}")
             send_blocked_user(user_id, reason)
+        else:
+            # 디버깅용: 정상으로 판단된 경우도 출력
+            print(f"✅ Normal: {user_id}")
+
+    # 루프 밖에는 안 되고, 위 else 아래에 아래 줄도 추가
+    # (전체 차단 현황 확인)
+    print(f"📊 현재 차단 목록 ({len(blocked_users)}명): {blocked_users}")
+
+
 def run_in_background():
     thread = threading.Thread(target=start_consumer, daemon=True)
     thread.start()
